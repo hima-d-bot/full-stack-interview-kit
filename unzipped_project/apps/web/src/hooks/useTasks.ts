@@ -1,18 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export const useTasks = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetch('http://localhost:8000/tasks')
-      .then(res => res.json())
-      .then(data => {
-        // BUG: Backend returns {items: []}, frontend expects {data: []}
-        setTasks(data.data || []);
-        setLoading(false);
-      });
+  const fetchTasks = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8000/tasks?limit=50');
+      const result = await response.json();
+      setTasks(result.data || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { tasks, loading };
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+  return { tasks, loading, error, refresh: fetchTasks };
 };
