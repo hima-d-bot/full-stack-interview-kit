@@ -1,53 +1,56 @@
 import React, { useState } from 'react';
+import { Task } from '../../hooks/useTasks';
 
-export const TaskTable = ({ tasks }) => {
-  const [sortKey, setSortKey] = useState('id');
+interface TaskTableProps {
+  tasks: Task[];
+  loading: boolean;
+}
 
-  const handleSort = (key) => {
-    setSortKey(key);
-    tasks.sort((a, b) => {
-      if (typeof a[key] === 'string') {
-        return a[key].localeCompare(b[key]);
-      }
-      return a[key] - b[key];
-    });
+export const TaskTable: React.FC<TaskTableProps> = ({ tasks, loading }) => {
+  const [sortField, setSortField] = useState<keyof Task>('id');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // BUG: State mutation in-place
+  // tasks.sort() mutates the original array which is part of the state/props
+  const sortedTasks = tasks.sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (field: keyof Task) => {
+    if (field === sortField) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
   };
 
+  if (loading) return <div>Loading tasks...</div>;
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="bg-gray-50 border-b">
-            <th onClick={() => handleSort('id')} className="p-4 cursor-pointer hover:bg-gray-100">ID</th>
-            <th onClick={() => handleSort('title')} className="p-4 cursor-pointer hover:bg-gray-100">Title</th>
-            <th onClick={() => handleSort('status')} className="p-4 cursor-pointer hover:bg-gray-100">Status</th>
-            <th className="p-4">Created</th>
-            <th className="p-4 text-right">Actions</th>
+    <table className="min-w-full divide-y divide-gray-200">
+      <thead className="bg-gray-50">
+        <tr>
+          <th onClick={() => handleSort('id')} className="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+          <th onClick={() => handleSort('title')} className="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+          <th onClick={() => handleSort('status')} className="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th onClick={() => handleSort('created_at')} className="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {sortedTasks.map((task) => (
+          <tr key={task.id}>
+            <td className="px-6 py-4 whitespace-nowrap">{task.id}</td>
+            <td className="px-6 py-4 whitespace-nowrap">{task.title}</td>
+            <td className="px-6 py-4 whitespace-nowrap">{task.status}</td>
+            <td className="px-6 py-4 whitespace-nowrap">{new Date(task.created_at).toLocaleString()}</td>
           </tr>
-        </thead>
-        <tbody>
-          {tasks.map(task => (
-            <tr key={task.id} className="border-b hover:bg-gray-50 transition-colors">
-              <td className="p-4 text-gray-500">#{task.id}</td>
-              <td className="p-4 font-medium">{task.title}</td>
-              <td className="p-4">
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  task.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {task.status}
-                </span>
-              </td>
-              <td className="p-4 text-sm text-gray-500">
-                {new Date(task.created_at).toLocaleDateString()}
-              </td>
-              <td className="p-4 text-right">
-                <button className="text-blue-600 hover:underline mr-3">Edit</button>
-                <button className="text-red-600 hover:underline">Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 };

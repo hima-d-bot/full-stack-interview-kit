@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Kit Tester</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .version { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        .clean { border-left: 5px solid #4CAF50; }
+        .buggy { border-left: 5px solid #f44336; }
+        h2 { margin-top: 0; }
+        code { background: #eee; padding: 2px 5px; border-radius: 4px; }
+        .status { font-weight: bold; }
+        .pass { color: #4CAF50; }
+        .fail { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Full-Stack Interview Kit Tester</h1>
+        <p>This page describes the two versions of the application and how to test them.</p>
+
+        <div class="version clean">
+            <h2>1. Clean Version (Skeleton)</h2>
+            <p><strong>Status:</strong> <span class="status pass">Fully Functional</span></p>
+            <p>This version has all bugs fixed and follows best practices.</p>
+            <ul>
+                <li>Deterministic pagination.</li>
+                <li>Correct integration contract (<code>data</code> key).</li>
+                <li>Optimized suggestion engine.</li>
+                <li>Immutable frontend sorting.</li>
+            </ul>
+            <code>cd unzipped_skeleton && make test</code>
+        </div>
+
+        <div class="version buggy">
+            <h2>2. Interview Version</h2>
+            <p><strong>Status:</strong> <span class="status fail">Contains 8+ Intentional Bugs</span></p>
+            <p>This version is for the candidate to debug.</p>
+            <ul>
+                <li><strong>BE:</strong> Unstable sort & off-by-one pagination.</li>
+                <li><strong>FE:</strong> State mutation & stale effects.</li>
+                <li><strong>Integration:</strong> Key mismatch (<code>items</code> vs <code>data</code>).</li>
+                <li><strong>Algo:</strong> O(N*M) complexity trap.</li>
+            </ul>
+            <code>cd unzipped_interview && make test</code>
+        </div>
+
+        <hr>
+        <h3>How to run the automated test script:</h3>
+        <pre>python3 test_both_apis.py</pre>
+    </div>
+</body>
+</html>

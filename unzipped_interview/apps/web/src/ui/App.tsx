@@ -1,38 +1,47 @@
 import React, { useState } from 'react';
-import { TaskTable } from './components/TaskTable';
 import { useTasks } from '../hooks/useTasks';
+import { TaskTable } from './components/TaskTable';
 
-export const App = () => {
-  const { tasks, loading, refresh } = useTasks();
-  const [view, setView] = useState('list');
-  
+export const App: React.FC = () => {
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState<string | undefined>(undefined);
+  const { tasks, total, loading } = useTasks(page, 10, status);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm p-4 mb-8">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">TaskFlow Pro</h1>
-          <div className="space-x-4">
-            <button onClick={() => setView('list')} className="text-blue-600">Tasks</button>
-            <button onClick={() => setView('stats')} className="text-gray-600">Stats</button>
-            <button onClick={refresh} className="bg-blue-600 text-white px-4 py-2 rounded">Refresh</button>
-          </div>
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-4">Task Management</h1>
+      
+      <div className="mb-4 flex gap-4">
+        <select 
+          value={status || ''} 
+          onChange={(e) => setStatus(e.target.value || undefined)}
+          className="border p-2 rounded"
+        >
+          <option value="">All Statuses</option>
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+        </select>
+        
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+          >
+            Previous
+          </button>
+          <span>Page {page}</span>
+          <button 
+            onClick={() => setPage(p => p + 1)}
+            disabled={page * 10 >= total}
+            className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+          >
+            Next
+          </button>
         </div>
-      </nav>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4">
-        {loading ? (
-          <div className="flex justify-center p-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b">
-              <h2 className="text-lg font-semibold">Active Tasks ({tasks.length})</h2>
-            </div>
-            <TaskTable tasks={tasks} />
-          </div>
-        )}
-      </main>
+      <TaskTable tasks={tasks} loading={loading} />
     </div>
   );
 };

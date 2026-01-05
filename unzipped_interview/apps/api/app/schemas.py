@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
 
 class TaskBase(BaseModel):
     title: str
@@ -18,13 +18,15 @@ class Task(TaskBase):
     class Config:
         from_attributes = True
 
-class Label(BaseModel):
-    id: int
-    name: str
-    color: str
+class PaginatedTasks(BaseModel):
+    data: List[Task]
+    total: int
+    page: int
+    limit: int
 
-class Activity(BaseModel):
-    id: int
-    task_id: int
-    action: str
-    timestamp: datetime
+class SuggestionRequest(BaseModel):
+    query: str
+
+class SuggestionResponse(BaseModel):
+    suggestions: List[Task]
+    operations: int

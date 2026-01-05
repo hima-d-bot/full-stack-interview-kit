@@ -1,1 +1,1 @@
-class StatsService:\n    pass
+pass

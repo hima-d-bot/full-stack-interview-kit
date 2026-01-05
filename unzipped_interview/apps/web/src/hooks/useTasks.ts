@@ -1,26 +1,46 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
-export const useTasks = () => {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export interface Task {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
 
-  const fetchTasks = useCallback(async () => {
+export const useTasks = (page: number, limit: number, status?: string) => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  // BUG: Missing useCallback - this function is recreated on every render
+  const fetchTasks = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/tasks?limit=50');
+      const url = new URL('/api/tasks', window.location.origin);
+      url.searchParams.append('page', page.toString());
+      url.searchParams.append('limit', limit.toString());
+      if (status) url.searchParams.append('status', status);
+
+      const response = await fetch(url.toString());
       const result = await response.json();
-      setTasks(result.data || []);
-    } catch (err) {
-      setError(err.message);
+      
+      // BUG: Integration mismatch - Frontend expects 'data' but Backend sends 'items'
+      // This will cause 'tasks' to be undefined/empty
+      setTasks(result.data); 
+      setTotal(result.total);
+    } catch (error) {
+      console.error('Failed to fetch tasks', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchTasks();
-  }, [fetchTasks]);
+    // BUG: Missing dependencies in useEffect
+  }, []); 
 
-  return { tasks, loading, error, refresh: fetchTasks };
+  return { tasks, total, loading, refetch: fetchTasks };
 };
