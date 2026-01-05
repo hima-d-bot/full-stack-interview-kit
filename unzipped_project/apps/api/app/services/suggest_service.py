@@ -1,0 +1,1 @@
+class SuggestService:\n    pass

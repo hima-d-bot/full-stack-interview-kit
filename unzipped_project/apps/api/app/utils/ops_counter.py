@@ -1,0 +1,1 @@
+class OpsCounter:\n    pass
